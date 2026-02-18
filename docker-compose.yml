@@ -1,0 +1,71 @@
+###############################################################################
+# Global Banking Data Warehouse — Docker Compose
+# Usage: docker compose up --build
+###############################################################################
+
+services:
+
+  banking-dw:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PG_VERSION: "17"
+        DB_NAME: banking_dw
+        DB_USER: postgres
+        DB_PASSWORD: Password1001
+    image: banking-dw:latest
+    container_name: banking-dw-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      PG_VERSION: "17"
+      DB_NAME: banking_dw
+      DB_USER: postgres
+      DB_PASSWORD: Password1001
+    volumes:
+      # Persist data across container restarts
+      - banking_dw_data:/var/lib/postgresql/17/main
+      # Persist logs
+      - banking_dw_logs:/var/log/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d banking_dw -h localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    shm_size: 256mb
+    mem_limit: 2g
+    cpus: "2.0"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+
+  # ── Optional: pgAdmin 4 web UI ──────────────────────────────────────────────
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: banking-dw-pgadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: pramod.k@iitcoman.com
+      PGADMIN_DEFAULT_PASSWORD: Password1001
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin_servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      banking-dw:
+        condition: service_healthy
+
+volumes:
+  banking_dw_data:
+    driver: local
+  banking_dw_logs:
+    driver: local
+  pgadmin_data:
+    driver: local

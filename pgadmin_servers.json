@@ -1,0 +1,15 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Banking Data Warehouse",
+      "Group": "Servers",
+      "Host": "banking-dw",
+      "Port": 5432,
+      "MaintenanceDB": "banking_dw",
+      "Username": "postgres",
+      "Password": "Password1001",
+      "SSLMode": "prefer",
+      "Comment": "Global Banking DW — Kimball Dimensional Model"
+    }
+  }
+}
